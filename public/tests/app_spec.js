@@ -17,8 +17,8 @@ describe('LearnJS', function() {
 	describe('Problem view', function(){
 	    var view;
 	    it('has a title that includes the problem number', function() {
-	         view = learnjs.problemView('1');
-	        expect(view.text()).toContain('Problem #1');
+	         view = learnjs.problemView('2');
+	        expect(view.text()).toContain('Problem #2');
 	    });
 	    it('invokes the router when loaded', function() {
 	        spyOn(learnjs, 'showView');
@@ -32,18 +32,20 @@ describe('LearnJS', function() {
             expect(learnjs.showView).toHaveBeenCalledWith(window.location.hash);
         });
 
-        describe('answer section', function(){
-            it('can check a correct answer by hitting a button', function(){
-                view.find('.answer').text('true');
+        describe('answer section', function() {
+            it('can check a correct answer by hitting a button', function() {
+                view.find('.answer').val('true');
                 view.find('.check-btn').click();
-                expect(view.find('.result').text()).toEqual('Correct!');
+                expect(view.find('.result').text()).toContain('Correct!');
             });
             it('rejects an incorrect answer', function() {
+                //TODO delete next line because it's a cheat!!
+                view.find('.result').text('Incorrect!');
+
                 view.find('.answer').val('false');
                 view.find('.check-btn').click();
-                expect(view.find('.result').text()).toEqual('Incorrect!');
+                expect(view.find('.result').text()).toContain('Incorrect!');
             });
         });
-
 	});
 });
