@@ -48,6 +48,7 @@ learnjs.showView = function(hash) {
     var hashParts = hash.split('-');
     var viewFn = routes[hashParts[0]];
     if (viewFn) {
+    learnjs.triggerEvent('removingView', []);
     $('.view-container').empty().append(viewFn(hashParts[1]));
     }
 }
@@ -58,6 +59,7 @@ learnjs.problemView = function(data) {
     var problemData = learnjs.problems[problemNumber - 1];
     var resultFlash = view.find('.result');
 
+    // Helper function that checks the answer by collecting and validating the input.
     function checkAnswer() {
         var answer = view.find('.answer').val();
         // var test = problemData.code.replace('__', answer) + '; problem();';
@@ -65,7 +67,7 @@ learnjs.problemView = function(data) {
         //return problemData.answer.contains(answer);
         return problemData.answer.indexOf(answer) >= 0 ? true : false;
     }
-
+    // checks the correctness of the answer by calling checkAnswer.
     function checkAnswerClick() {
         if (checkAnswer()) {
             learnjs.flashElement(resultFlash, learnjs.buildCorrectFlash(problemNumber, true));
@@ -80,6 +82,7 @@ learnjs.problemView = function(data) {
     return view;
 }
 
+// This small part assembles the user feedback and distinguishes between the correct and incorrect answer.
 learnjs.buildCorrectFlash = function (problemNum, answer) {
     if (answer) {
         var correctFlash = learnjs.template('correct-flash');
@@ -89,6 +92,15 @@ learnjs.buildCorrectFlash = function (problemNum, answer) {
     var link = correctFlash.find('a');
     if (problemNum < learnjs.problems.length) {
         link.attr('href', '#problem-' + (problemNum + 1));
+        /** Alternative from book removes button again:
+        var buttonItem = learnjs.template('skip-btn');
+        buttonItem.find('a').attr('href', '#problem-' + (problemNumber + 1));
+        $('.nav-list').append(buttonItem);
+        view.bind('removingView', function() {
+            buttonItem.remove();
+        });
+        **/
+
     } else {
         link.attr('href', '');
         link.text("Yaaayy! You're finished! Good job!");
@@ -100,6 +112,9 @@ learnjs.buildCorrectFlash = function (problemNum, answer) {
 learnjs.template = function(name) {
     return $('.templates .' + name).clone();
 }
+learnjs.triggerEvent = function(name, args) {
+    $('.view-container>*').trigger(name, args);
+}
 
 // Fades out the old content of the element and sets a new one giving visual feed back.
 learnjs.flashElement = function(elem, content) {
@@ -109,7 +124,7 @@ learnjs.flashElement = function(elem, content) {
     });
 }
 
-// Loads the page and initiates the showView function.
+// Loads the page and initiates the showView function. This is the change listener so to speak.
 learnjs.appOnReady = function(){
     window.onhashchange = function() {
         learnjs.showView(window.location.hash);
