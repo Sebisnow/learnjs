@@ -2,6 +2,7 @@
 <html>
     <head>
         <meta charset='utf-8'>
+        <meta name="google-signin-client_id" content="599487475265-1nv1o2mqnd4r4lt07verar8onj0fl6qd.apps.googleusercontent.com"/>
         <title>Learn JS!</title>
         <link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
         <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css'>
@@ -10,6 +11,7 @@
         <script src='https://code.jquery.com/jquery-2.1.4.min.js'></script>
         <script src='/vendor.js'></script>
         <script src='/app.js'></script>
+        <script src="https://apis.google.com/js/platform.js" async defer></script>
         </head>
     <body>
         <div class='container'>
@@ -24,6 +26,11 @@
                     <li><a class='text-lg' href="#">LearnJS</a></li>
                     <li><a href="#problem-1">Start</a></li>
                 </ul>
+                <div class='four columns signin-bar'>
+                    <span class='navbar-padding u-pull-right'>
+                        <span class="g-signin2" data-onsuccess="googleSignIn"></span>
+                    </span>
+                </div>
             </div>
             <div class='view-container container'>
 
@@ -51,6 +58,13 @@
                             <p class="result"></p>
                         </div>
                     </form>
+                </div>
+                <div class='profile-view'>
+                    <h3>Your Profile</h3>
+                    <div class='email'></div>
+                </div>
+                <div class='profile-link navbar-padding-lg'>
+                    <a href="#profile"></a>
                 </div>
                 <div class='correct-flash'>
                     <span>Correct!</span> <a>Next Problem</a>

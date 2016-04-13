@@ -48,4 +48,31 @@ describe('LearnJS', function() {
             });
         });
 	});
+	describe('Authentication process', function(){
+	    var profile;
+	    beforeEach(function() {
+	        profile = jasmine.createSpyObj('profile', ['getEmail']);
+	        spyOn(AWS, 'CognitoIdentityCredentials');
+	        user = jasmine.createSpyObj('user', ['getAuthResponse', 'getBasicProfile']);
+          user.getAuthResponse.and.returnValue({id_token: 'GOOGLE_ID'});
+          user.getBasicProfile.and.returnValue(profile);
+          profile.getEmail.and.returnValue('foo@bar.com');
+          googleSignIn(user);
+	    });
+	    it('calls the google authentication function', function(){
+	        expect(AWS.CognitoIdentityCredentials).toHaveBeenCalled();
+	    });
+	    it('gets the profile of the user with its Mail address', function(){
+
+	        expect(AWS.CognitoIdentityCredentials).toHaveBeenCalled();
+	    });
+	    it('sets the identity pool ID and Google ID token', function() {
+            expect(AWS.CognitoIdentityCredentials).toHaveBeenCalledWith({
+                IdentityPoolId: learnjs.poolId,
+                Logins: {
+                  'accounts.google.com': 'GOOGLE_ID'
+                }
+            });
+        });
+	});
 });

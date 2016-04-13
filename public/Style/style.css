@@ -39,4 +39,9 @@ h3 {margin: 1.5em}
 }
 .nav-container a { color: white; }
 
+.navbar-padding {
+    padding-top: 7px;
+    display: inline-block;
+}
+
 .text-lg {font-size: 22pt;}

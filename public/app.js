@@ -1,10 +1,12 @@
 'use strict';
 
-var learnjs = {};
+var learnjs = {
+    poolId: 'eu-west-1:7869f4d0-7afc-4de8-98cb-4c4ffa927c47'
+};
 
 learnjs.problems = [
   {
-    description: "What is truth?",
+    description: "What is truth, or rather the answer to all questions?",
     code: "function problem() { return __; }",
     answer: ["42", "true"]
   },
@@ -43,7 +45,8 @@ learnjs.showView = function(hash) {
     var routes = {
     '#problem': learnjs.problemView,
     '#landing': learnjs.landingView,
-    '': learnjs.landingView
+    '': learnjs.landingView,
+    '#profile': learnjs.profileView
     };
     var hashParts = hash.split('-');
     var viewFn = routes[hashParts[0]];
@@ -123,6 +126,8 @@ learnjs.flashElement = function(elem, content) {
         elem.fadeIn();
     });
 }
+// manages the identity in the app.
+learnjs.identity = new $.Deferred();
 
 // Loads the page and initiates the showView function. This is the change listener so to speak.
 learnjs.appOnReady = function(){
@@ -130,6 +135,7 @@ learnjs.appOnReady = function(){
         learnjs.showView(window.location.hash);
     };
     learnjs.showView(window.location.hash);
+    learnjs.identity.done(learnjs.addProfileLink);
 
 }
 
@@ -137,4 +143,70 @@ learnjs.applyObject = function(obj, elem) {
     for (var key in obj) {
         elem.find('[data-name="' + key + '"]').text(obj[key]);
     }
-};
+}
+// joins requests when they are complete and updates AWS credentials.
+learnjs.awsRefresh = function() {
+  var deferred = new $.Deferred();
+  AWS.config.credentials.refresh(function(err) {
+    if (err) {
+      deferred.reject(err);
+      console.log('Before the Error' + err);
+    } else {
+      deferred.resolve(AWS.config.credentials.identityId);
+      console.log('Before the AWSrefresh' + AWS.config.credentials.identityId);
+    }
+  });
+  return deferred.promise();
+}
+
+// show the user his profile information.
+learnjs.profileView = function() {
+  var view = learnjs.template('profile-view');
+  learnjs.identity.done(function(identity) {
+    view.find('.email').text(identity.email);
+  });
+  return view;
+}
+// adds the profile link to the view.
+learnjs.addProfileLink = function(profile) {
+  var link = learnjs.template('profile-link');
+  link.find('a').text(profile.email);
+  $('.signin-bar').prepend(link);
+}
+
+// callback function of google sign-in.
+function googleSignIn(googleUser) {
+  var id_token = googleUser.getAuthResponse().id_token;
+  AWS.config.update({
+    region: 'eu-east-1',
+    credentials: new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: learnjs.poolId,
+      Logins: {
+        'accounts.google.com': id_token
+      }
+    })
+  })
+  console.log(AWS.config);
+  console.log(arguments);
+  function refresh() {
+  console.log('Before the Refresh');
+    return gapi.auth2.getAuthInstance().signIn({
+        prompt: 'login'
+      }).then(function(userUpdate) {
+      console.log('Before the refresh');
+      var creds = AWS.config.credentials;
+      var newToken = userUpdate.getAuthResponse().id_token;
+      creds.params.Logins['accounts.google.com'] = newToken;
+      console.log('Before the refresh');
+      return learnjs.awsRefresh();
+    });
+  }
+  learnjs.awsRefresh().then(function(id) {
+    console.log('Adding mail' + id);
+    learnjs.identity.resolve({
+      id: id,
+      email: googleUser.getBasicProfile().getEmail(),
+      refresh: refresh
+    });
+  });
+}
